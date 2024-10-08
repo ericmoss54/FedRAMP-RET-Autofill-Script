@@ -502,6 +502,7 @@ def define_risk_names_2(ret_name_tmp):
                 new_name = f"{name}_{name_count[name]}"
         ret_name_tmp2.append(new_name)
         
+#final formula - strips "_1" off of findings that only have a single finding associated with that topic        
 def define_risk_names_3(ret_name_tmp2):
     for name in ret_name_tmp2:
         if name.endswith("_1"):
