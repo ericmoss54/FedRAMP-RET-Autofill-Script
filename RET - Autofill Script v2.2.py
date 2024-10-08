@@ -38,7 +38,7 @@ Initial Publication Date:
 Change Log:
 2.1 - modified PL-2 functions to point control column to the implementation statement with the actual issue (An issue with the AC-2 implementation statement will refer to AC-2, not PL-2)
 2.2 - added functionality to name documentation and SSP findings and iterate over them to add numbers if multiples existed.
-
+2.3 - removed blanked out POA&M ID references; added POA&M ID Generator
 
 Todo list:
     Load and Save document with GUI
@@ -124,6 +124,9 @@ ret_Impact = []
 #The following list defines the words that will be checked for to determine if a finding is a documentation finding. 
 #All findings that have at least one of these words will be labeled as a documentation finding.
 documentation_words_to_check = ["policy", "Policy", 'Policies', "Documentation", "documentation"]
+
+#pulls current year to assign to POA&Ms
+poam_year = dateTimeObj.strftime("%Y")
 #%% Define Functions
 #finding_counter = 1
 
@@ -140,7 +143,6 @@ def process_findings_in_sheet(sheet):
     tmp_ret_risks = []
     tmp_ret_likelihoods = []
     tmp_ret_impacts = []
-    tmp_ret_poam_id = []
     tmp_ret_detection_source = []
     tmp_ret_source_id = []
     tmp_ret_asset_id = []
@@ -226,7 +228,6 @@ def process_findings_in_sheet(sheet):
                 tmp_ret_risks.append(new_finding_stmt)
                 tmp_ret_controls.append(control_ids[iter_index])
                 tmp_ret_assessments.append(assessments[iter_index])
-                tmp_ret_poam_id.append("") #starts with first unused POA&M number
                 #functionality to check and tag for doocumentation findings.
                 found_words = [word for word in documentation_words_to_check if word in new_finding_stmt]
                 if found_words:
@@ -278,8 +279,6 @@ def process_findings_in_sheet(sheet):
         print("Likelihood Paragraphs: " + str(len(tmp_ret_likelihoods)))
         print("Impact Paragraphs: " + str(len(tmp_ret_impacts)))
     else:
-        for item in tmp_ret_poam_id:
-            ret_poam_id.append(item)
         for item in tmp_ret_controls:
             ret_controls.append(item)
         for item in tmp_ret_name:
@@ -324,7 +323,6 @@ def process_pl2s_in_sheet(sheet):
     working_df.dropna(subset=['SSP Implementation Differential?'], inplace=True)    #removes all controls without findings
     tmp_ret_controls =[]
     tmp_ret_risks = []
-    tmp_ret_poam_id = []
     tmp_ret_detection_source = []
     tmp_ret_source_id = []
     tmp_ret_asset_id = []
@@ -395,7 +393,6 @@ def process_pl2s_in_sheet(sheet):
             pl2_stmt = pl2_stmt.replace(prefix, "")
         tmp_ret_risks.append(pl2_stmt)
         tmp_ret_controls.append(pl2_controls_list[index])
-        tmp_ret_poam_id.append("") #starts with first unused POA&M number
         tmp_ret_name.append("pl-2")#
         tmp_ret_detection_source.append("Assessment Test Case") #Control testing or documentation Review
         tmp_ret_source_id.append("None")
@@ -411,8 +408,6 @@ def process_pl2s_in_sheet(sheet):
         tmp_ret_service_name.append("")
         tmp_ret_risk_adjustment.append("No")
         index+=1
-    for item in tmp_ret_poam_id:
-        ret_poam_id.append(item)
     for item in tmp_ret_controls:
         ret_controls.append(item)
     for item in tmp_ret_name:
@@ -473,7 +468,7 @@ def calculate_risk(ret_Likelihood, ret_Impact):
             ret_adjusted_risk_rating.append('N/A')
         iter_index += 1   
 
-#first formula to perform basic tagging        
+#first risk name formula to perform basic tagging        
 def define_risk_names_1(ret_name):
     index = 0
     for name in ret_name:    
@@ -487,7 +482,7 @@ def define_risk_names_1(ret_name):
             ret_name_tmp.append("")
         index+=1
         
-#second formula to identify duplicate controls and add numbering to applicable controls        
+#second risk name formula to identify duplicate controls and add numbering to applicable controls        
 def define_risk_names_2(ret_name_tmp):
     name_count = {} 
     for name in ret_name_tmp:
@@ -502,7 +497,7 @@ def define_risk_names_2(ret_name_tmp):
                 new_name = f"{name}_{name_count[name]}"
         ret_name_tmp2.append(new_name)
         
-#final formula - strips "_1" off of findings that only have a single finding associated with that topic        
+#final risk name formula - strips "_1" off of findings that only have a single finding associated with that topic        
 def define_risk_names_3(ret_name_tmp2):
     for name in ret_name_tmp2:
         if name.endswith("_1"):
@@ -515,20 +510,41 @@ def define_risk_names_3(ret_name_tmp2):
         else:
             ret_name_final.append(name)
             
-            
+def generate_poam_ids(ret_name):
+    index = 0
+    finding_count = 1
+    for name in ret_name:
+        if "SSP" in name:
+            poam_ctl = "PL-2"
+        elif "pl-2" in name:
+            poam_ctl = "PL-2"
+        else:
+            poam_ctl = ret_controls[index]
+        finding_count_string = str(finding_count)
+        poam_string = poam_year + " - V" + finding_count_string + " - " + poam_ctl
+        ret_poam_id.append(poam_string)
+        index += 1
+        finding_count += 1
+           
 #%% Execute Findings Functions
-
 for sheet in control_families:
     process_findings_in_sheet(sheet)
+
 #%% Execute PL-2 Functions
 for sheet in control_families:
     process_pl2s_in_sheet(sheet)
+    
 #%% Calulate Original Risk scores
 calculate_risk(ret_Likelihood, ret_Impact)
+
 #%% run naming process
 define_risk_names_1(ret_name)
 define_risk_names_2(ret_name_tmp)
 define_risk_names_3(ret_name_tmp2)
+
+#%% generate POA&M ID's
+generate_poam_ids(ret_name)
+
 #%% Save and Export the RET
 export_df = pd.DataFrame(list(zip(
     ret_poam_id,
@@ -573,8 +589,33 @@ columns =
 export_df = export_df[~export_df["Weakness Description"].str.startswith('Refer ', na=False)]
 export_df = export_df[~export_df["Weakness Description"].str.startswith('See ', na=False)]
 
+#%% Finalize POA&M IDs:
+ret_name =  export_df['Weakness Name'].tolist()
+ret_controls = export_df['Controls'].tolist()
+ret_poam_id = []
+generate_poam_ids(ret_name)
+export_df.drop('POA&M ID', axis = 1, inplace = True)
+export_df['POA&M ID'] = ret_poam_id
+export_df = export_df.loc[:,['POA&M ID', 
+ 'Controls',
+ 'Weakness Name', 
+ 'Weakness Description', 
+ 'Source of Discovery',
+ 'Weakness Source Identifier',
+ 'Affected IP Address / Hostname / Database',
+ 'Detection Date',
+ 'Vendor Dependencies',
+ 'Vendor Products',
+ 'Risk Exposure(before Mitigating Controls / Factors)',
+ 'Adjusted Risk Rating',
+ 'Risk Adjustment',
+ 'False Positive',
+ 'Operational Requirement',
+ 'Deviation Rationale',
+ 'Comments',
+ 'Service Name']]
 
-
+#%%
 book = load_workbook(ret_path)
 writer = pd.ExcelWriter(ret_path, engine='openpyxl')
 writer.workbook = book
