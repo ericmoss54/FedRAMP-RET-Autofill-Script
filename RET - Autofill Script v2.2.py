@@ -39,7 +39,7 @@ Change Log:
 2.1 - modified PL-2 functions to point control column to the implementation statement with the actual issue (An issue with the AC-2 implementation statement will refer to AC-2, not PL-2)
 2.2 - added functionality to name documentation and SSP findings and iterate over them to add numbers if multiples existed.
 2.3 - removed blanked out POA&M ID references; added POA&M ID Generator
-2.5 - removed hard coded username - defined local_user variable - updated terminology to SRTM (TCW, Test case workbook, is a depreciated document)
+2.4 - removed hard coded username - defined local_user variable - updated terminology to SRTM (TCW, Test case workbook, is a depreciated document)
 
 Todo list:
     Load and Save document with GUI
