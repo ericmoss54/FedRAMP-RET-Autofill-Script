@@ -5,16 +5,16 @@ Created on Sun Nov 12 19:21:00 2023
 @author: Eric Moss
 
 
-The purpose of this script is to prefill a Risk Exposure Table (RET) to the greatest extent possible through automation from a completed Test Case Workbook (TCW)
+The purpose of this script is to prefill a Risk Exposure Table (RET) to the greatest extent possible through automation from a completed Security Requirements Traceability Matrix (SRTM)
 
 Updated to follow rev5 tempaltes provided by FedRAMP
 
 Assumptions:
--TCW IS COMPLETE AND READY TO DELIVER; no more findings, all custom formating removed, all checks have been run and reviewed
+-SRTM IS COMPLETE AND READY TO DELIVER; no more findings, all custom formating removed, all checks have been run and reviewed
 
--If any changes are made to the TCW, all changes must also be updated in the RET, else the RET process/script restarted from scratch.
+-If any changes are made to the SRTM, all changes must also be updated in the RET, else the RET process/script restarted from scratch.
 
--Indentified risks, risk statements, and reccomendations should all be written as a single paragraph in the TCW. 
+-Indentified risks, risk statements, and reccomendations should all be written as a single paragraph in the SRTM. 
 ---Multiple sentances can be used, but newlines are used to separate multiple findings in a single Assessment Procedure. 
 ---Failure to folow this will result in ValueErrors and that control family failing to be processed
 ---Same rule applies to PL-2 Findings
@@ -57,6 +57,8 @@ Todo list:
 from datetime import datetime
 import pandas as pd
 from openpyxl import load_workbook
+import os
+
 
 dateTimeObj = datetime.now()
 timestampStr = dateTimeObj.strftime("%d-%b-%Y (%H:%M:%S.%f)")
@@ -66,12 +68,14 @@ pd.options.mode.chained_assignment = None  # default='warn'
 
 #%% Define variables 
 
+#define local user variable
+local_user = os.environ['USERPROFILE']
 
-#Completed TCW
-tcw_path = r'C:\Users\Eric\Documents\Local Documents\Appendix B - 2024 MediaLab Moderate Annual SAP-Appendix-A-FedRAMP-Moderate-Security-Test-Case-Procedures.xlsx'
+#Completed SRTM
+srtm_path = local_user + '\\Documents\\Local Documents\\Appendix B - 2024 MediaLab Moderate Annual SAP-Appendix-A-FedRAMP-Moderate-Security-Test-Case-Procedures.xlsx'
 
 #Blank RET
-ret_path = r'C:\Users\Eric\Documents\Local Documents\RET_data_export.xlsx'
+ret_path = local_user + '\\Documents\\Local Documents\\RET_data_export.xlsx'
 
 control_families = [
     'AC',
@@ -131,7 +135,7 @@ poam_year = dateTimeObj.strftime("%Y")
 #finding_counter = 1
 
 def process_findings_in_sheet(sheet):
-    working_df = pd.read_excel(tcw_path, sheet_name=sheet)
+    working_df = pd.read_excel(srtm_path, sheet_name=sheet)
     working_df = working_df.dropna(subset=['Control ID']) #drop and FedRAMP formatting rows that muck up the process
     #global finding_counter
     working_df = working_df[['Control ID', 'Assessment Procedure', 'Identified Risk', 'Likelihood Level', 'Impact Level']]    #Cut DF down to necessary columns
@@ -318,7 +322,7 @@ def process_findings_in_sheet(sheet):
     print(sheet + " Findings Completed: "+ timestampStr)        
 
 def process_pl2s_in_sheet(sheet):
-    working_df = pd.read_excel(tcw_path, sheet_name=sheet)
+    working_df = pd.read_excel(srtm_path, sheet_name=sheet)
     working_df = working_df[['Control ID', 'SSP Implementation Differential?']]    #Cut DF down to necessary columns      
     working_df.dropna(subset=['SSP Implementation Differential?'], inplace=True)    #removes all controls without findings
     tmp_ret_controls =[]
