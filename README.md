@@ -1,13 +1,13 @@
-The purpose of this script is to prefill a FedRAMP Risk Exposure Table (RET) to the greatest extent possible through automation from a completed Test Case Workbook (TCW)
+The purpose of this script is to prefill a FedRAMP Risk Exposure Table (RET) to the greatest extent possible through automation from a completed Security Requirements Traceability Matrix (SRTM)
 
 Updated to follow rev5 tempaltes provided by FedRAMP
 
 Assumptions:
--TCW IS COMPLETE AND READY TO DELIVER; no more findings, all custom formating removed, all checks have been run and reviewed
+-SRTM IS COMPLETE AND READY TO DELIVER; no more findings, all custom formating removed, all checks have been run and reviewed
 
--If any changes are made to the TCW, all changes must also be updated in the RET, else the RET process/script restarted from scratch.
+-If any changes are made to the SRTM, all changes must also be updated in the RET, else the RET process/script restarted from scratch.
 
--Indentified risks, risk statements, and reccomendations should all be written as a single paragraph in the TCW. 
+-Indentified risks, risk statements, and reccomendations should all be written as a single paragraph in the SRTM. 
 ---Multiple sentances can be used, but newlines are used to separate multiple findings in a single Assessment Procedure. 
 ---Failure to folow this will result in ValueErrors and that control family failing to be processed
 ---Same rule applies to PL-2 Findings (SSP Implementation Differential?)
