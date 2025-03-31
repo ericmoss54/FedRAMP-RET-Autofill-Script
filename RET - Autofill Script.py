@@ -73,7 +73,7 @@ pd.options.mode.chained_assignment = None  # default='warn'
 local_user = os.environ['USERPROFILE']
 
 #Completed SRTM
-srtm_path = local_user + '\\Documents\\Local Documents\\.xlsx'
+srtm_path = local_user + '\\Documents\\Local Documents\\input_SRTM.xlsx'
 
 #Blank RET
 ret_path = local_user + '\\Documents\\Local Documents\\RET_data_export.xlsx'
@@ -94,7 +94,8 @@ control_families = [
     'RA',
     'SA',
     'SC',
-    'SI']
+    'SI',
+    'SR']
 
 
 
