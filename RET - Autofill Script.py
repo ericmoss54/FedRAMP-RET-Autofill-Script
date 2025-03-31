@@ -73,7 +73,7 @@ pd.options.mode.chained_assignment = None  # default='warn'
 local_user = os.environ['USERPROFILE']
 
 #Completed SRTM
-srtm_path = local_user + '\\Documents\\Local Documents\\UCSC-FedRAMP-SAR-Appendix-B-Moderate-Security-Requirements-Traceability-Matrix.xlsx'
+srtm_path = local_user + '\\Documents\\Local Documents\\.xlsx'
 
 #Blank RET
 ret_path = local_user + '\\Documents\\Local Documents\\RET_data_export.xlsx'
