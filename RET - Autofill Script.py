@@ -73,7 +73,7 @@ pd.options.mode.chained_assignment = None  # default='warn'
 local_user = os.environ['USERPROFILE']
 
 #Completed SRTM
-srtm_path = local_user + '\\Documents\\Local Documents\\Appendix B - 2024 MediaLab Moderate Annual SAP-Appendix-A-FedRAMP-Moderate-Security-Test-Case-Procedures.xlsx'
+srtm_path = local_user + '\\Documents\\Local Documents\\UCSC-FedRAMP-SAR-Appendix-B-Moderate-Security-Requirements-Traceability-Matrix.xlsx'
 
 #Blank RET
 ret_path = local_user + '\\Documents\\Local Documents\\RET_data_export.xlsx'
@@ -90,13 +90,11 @@ control_families = [
     'MA',
     'MP',
     'PE',
-    'PL',
     'PS',
     'RA',
     'SA',
     'SC',
-    'SI',
-    'SR']
+    'SI']
 
 
 
