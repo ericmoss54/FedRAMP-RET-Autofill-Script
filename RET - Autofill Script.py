@@ -67,6 +67,7 @@ ret_operational_requirement = []
 ret_deviation_rationale = []
 ret_comments = []
 ret_service_name = []
+
 #Likelihood and impact are necessary to calculate original risk  - columns not imported into Final RET
 ret_Likelihood = []
 ret_Impact = []
@@ -77,6 +78,71 @@ documentation_words_to_check = ["policy", "Policy", 'Policies', "Documentation",
 
 #pulls current year to assign to POA&Ms
 poam_year = dateTimeObj.strftime("%Y")
+
+#defines prefixes that will be pulled from multiple finding cells
+finding_replacer_list = [
+    'Finding: ',
+    'Finding 1: ',
+    'Finding 2: ',
+    'Finding 3: ',
+    'Finding 4: ',
+    'Finding 5: ',
+    'Finding 6: ',
+    'Finding 7: ',
+    'Finding 8: ',
+    'Finding 9: ',
+    'Finding:10 ',
+    'Finding 11: ',
+    'Finding 12: ',
+    'Finding 13: ',
+    'Finding 14: ',
+    'Finding 15: ',
+    'Finding 16: ',
+    'Finding 17: ',
+    'Finding 18: ',
+    'Finding 19: ',
+    'Finding:20 ',
+    'Finding 21: ',
+    'Finding 22: ',
+    'Finding 23: ',
+    'Finding 24: ',
+    'Finding 25: ',
+    'Finding 26: ',
+    'Finding 27: ',
+    'Finding 28: ',
+    'Finding 29: ',
+    'finding: ',
+    'finding 1: ',
+    'finding 2: ',
+    'finding 3: ',
+    'finding 4: ',
+    'finding 5: ',
+    'finding 6: ',
+    'finding 7: ',
+    'finding 8: ',
+    'finding 9: ',
+    'finding:10 ',
+    'finding 11: ',
+    'finding 12: ',
+    'finding 13: ',
+    'finding 14: ',
+    'finding 15: ',
+    'finding 16: ',
+    'finding 17: ',
+    'finding 18: ',
+    'finding 19: ',
+    'finding:20 ',
+    'finding 21: ',
+    'finding 22: ',
+    'finding 23: ',
+    'finding 24: ',
+    'finding 25: ',
+    'finding 26: ',
+    'finding 27: ',
+    'finding 28: ',
+    'finding 29: ']
+
+
 #%% Define Functions
 #finding_counter = 1
 
@@ -114,37 +180,6 @@ def process_findings_in_sheet(sheet):
         tmp_ret_likelihoods,
         tmp_ret_impacts
         ]
-    finding_replacer_list = [
-        'Finding: ',
-        'Finding 1: ',
-        'Finding 2: ',
-        'Finding 3: ',
-        'Finding 4: ',
-        'Finding 5: ',
-        'Finding 6: ',
-        'Finding 7: ',
-        'Finding 8: ',
-        'Finding 9: ',
-        'Finding:10 ',
-        'Finding 11: ',
-        'Finding 12: ',
-        'Finding 13: ',
-        'Finding 14: ',
-        'Finding 15: ',
-        'Finding 16: ',
-        'Finding 17: ',
-        'Finding 18: ',
-        'Finding 19: ',
-        'Finding:20 ',
-        'Finding 21: ',
-        'Finding 22: ',
-        'Finding 23: ',
-        'Finding 24: ',
-        'Finding 25: ',
-        'Finding 26: ',
-        'Finding 27: ',
-        'Finding 28: ',
-        'Finding 29: ']
     control_ids = working_df['Control ID'].tolist()
     assessments = working_df['Assessment Procedure'].tolist()
     risks = working_df['Identified Risk'].tolist()
@@ -287,37 +322,6 @@ def process_pl2s_in_sheet(sheet):
     tmp_ret_service_name = []
     tmp_ret_name = []
     tmp_ret_adjusted_risk_rating =[]
-    finding_replacer_list = [
-        'Finding: ',
-        'Finding 1: ',
-        'Finding 2: ',
-        'Finding 3: ',
-        'Finding 4: ',
-        'Finding 5: ',
-        'Finding 6: ',
-        'Finding 7: ',
-        'Finding 8: ',
-        'Finding 9: ',
-        'Finding:10 ',
-        'Finding 11: ',
-        'Finding 12: ',
-        'Finding 13: ',
-        'Finding 14: ',
-        'Finding 15: ',
-        'Finding 16: ',
-        'Finding 17: ',
-        'Finding 18: ',
-        'Finding 19: ',
-        'Finding:20 ',
-        'Finding 21: ',
-        'Finding 22: ',
-        'Finding 23: ',
-        'Finding 24: ',
-        'Finding 25: ',
-        'Finding 26: ',
-        'Finding 27: ',
-        'Finding 28: ',
-        'Finding 29: ']
     risks = working_df['SSP Implementation Differential?'].tolist()
     risk_controls = working_df['Control ID'].tolist()
     new_i_risks = []
