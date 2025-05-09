@@ -539,6 +539,7 @@ columns =
      'Comments',
      'Service Name'
      ])
+
 #strip out "refer to" and "see" findings
 export_df = export_df[~export_df["Weakness Description"].str.startswith('Refer ', na=False)]
 export_df = export_df[~export_df["Weakness Description"].str.startswith('See ', na=False)]
@@ -579,5 +580,4 @@ export_df.to_excel(writer, sheet_name='SAR Risk Exposure Table', index = False)
 
 
 writer.close()
-#%%Export working_df- dev only
-#working_df.to_csv(r'C:\Users\Eric\Documents\Local Documents\working.csv', index=False)
+
