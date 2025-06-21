@@ -5,7 +5,7 @@ from datetime import datetime
 import pandas as pd
 from openpyxl import load_workbook
 import os
-
+import numpy as np
 
 dateTimeObj = datetime.now()
 timestampStr = dateTimeObj.strftime("%d-%b-%Y (%H:%M:%S.%f)")
@@ -479,7 +479,59 @@ def generate_poam_ids(ret_name):
         ret_poam_id.append(poam_string)
         index += 1
         finding_count += 1
-           
+#%%Define function to clean data
+
+def clean_and_split_lists():
+    global ret_poam_id, ret_controls, ret_name, ret_name_tmp, ret_name_tmp2, ret_name_final
+    global ret_description, ret_detection_source, ret_source_id, ret_asset_id
+    global ret_detection_date, ret_vendor_dep, ret_vendor_product, ret_original_risk
+    global ret_adjusted_risk_rating, ret_risk_adjustment, ret_false_positive
+    global ret_operational_requirement, ret_deviation_rationale, ret_comments, ret_service_name
+
+    # Form the DataFrame
+    df = pd.DataFrame({
+        'ret_controls': ret_controls,
+        'ret_name': ret_name,
+        'ret_description': ret_description,
+        'ret_detection_source': ret_detection_source,
+        'ret_source_id': ret_source_id,
+        'ret_asset_id': ret_asset_id,
+        'ret_detection_date': ret_detection_date,
+        'ret_vendor_dep': ret_vendor_dep,
+        'ret_vendor_product': ret_vendor_product,
+        'ret_original_risk': ret_original_risk,
+        'ret_adjusted_risk_rating': ret_adjusted_risk_rating,
+        'ret_risk_adjustment': ret_risk_adjustment,
+        'ret_false_positive': ret_false_positive,
+        'ret_operational_requirement': ret_operational_requirement,
+        'ret_deviation_rationale': ret_deviation_rationale,
+        'ret_comments': ret_comments,
+        'ret_service_name': ret_service_name
+    })
+
+    # Drop rows with NaN in ret_controls
+    df = df.dropna(subset=['ret_controls']).reset_index(drop=True)
+    df = df[~df['ret_description'].str.contains(r'\bok\b', case=False, na=False)].reset_index(drop=True)
+    
+    # Reassign cleaned columns back to global lists
+    ret_controls = df['ret_controls'].tolist()
+    ret_name = df['ret_name'].tolist()
+    ret_description = df['ret_description'].tolist()
+    ret_detection_source = df['ret_detection_source'].tolist()
+    ret_source_id = df['ret_source_id'].tolist()
+    ret_asset_id = df['ret_asset_id'].tolist()
+    ret_detection_date = df['ret_detection_date'].tolist()
+    ret_vendor_dep = df['ret_vendor_dep'].tolist()
+    ret_vendor_product = df['ret_vendor_product'].tolist()
+    ret_original_risk = df['ret_original_risk'].tolist()
+    ret_adjusted_risk_rating = df['ret_adjusted_risk_rating'].tolist()
+    ret_risk_adjustment = df['ret_risk_adjustment'].tolist()
+    ret_false_positive = df['ret_false_positive'].tolist()
+    ret_operational_requirement = df['ret_operational_requirement'].tolist()
+    ret_deviation_rationale = df['ret_deviation_rationale'].tolist()
+    ret_comments = df['ret_comments'].tolist()
+    ret_service_name = df['ret_service_name'].tolist()          
+    
 #%% Execute Findings Functions
 for sheet in control_families:
     process_findings_in_sheet(sheet)
@@ -492,6 +544,7 @@ for sheet in control_families:
 calculate_risk(ret_Likelihood, ret_Impact)
 
 #%% run naming process
+clean_and_split_lists()
 define_risk_names_1(ret_name)
 define_risk_names_2(ret_name_tmp)
 define_risk_names_3(ret_name_tmp2)
