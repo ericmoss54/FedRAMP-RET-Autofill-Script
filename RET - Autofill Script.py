@@ -26,8 +26,8 @@ ret_path = local_user + '\\Documents\\Local Documents\\RET_data_export.xlsx'
 
 control_families = [
     'AC',
-    'AT',
     'AU',
+    'AT',
     'CA',
     'CM',
     'CP',
@@ -36,6 +36,7 @@ control_families = [
     'MA',
     'MP',
     'PE',
+    'PL',
     'PS',
     'RA',
     'SA',
@@ -67,6 +68,15 @@ ret_operational_requirement = []
 ret_deviation_rationale = []
 ret_comments = []
 ret_service_name = []
+
+
+#PL-2 df lists
+pl_2_poam_id = []
+pl_2_name = []
+pl_2_description = []
+
+#global finding count variable
+finding_count = 1
 
 #Likelihood and impact are necessary to calculate original risk  - columns not imported into Final RET
 ret_Likelihood = []
@@ -303,102 +313,25 @@ def process_findings_in_sheet(sheet):
     print(sheet + " Findings Completed: "+ timestampStr)        
 
 def process_pl2s_in_sheet(sheet):
+    drop_list = ["OK", "See", "Refer to"]
+    global pl_2_name, pl_2_description
     working_df = pd.read_excel(srtm_path, sheet_name=sheet)
-    working_df = working_df[['Control ID', 'SSP Implementation Differential?']]    #Cut DF down to necessary columns      
-    working_df.dropna(subset=['SSP Implementation Differential?'], inplace=True)    #removes all controls without findings
-    tmp_ret_controls =[]
-    tmp_ret_risks = []
-    tmp_ret_detection_source = []
-    tmp_ret_source_id = []
-    tmp_ret_asset_id = []
-    tmp_ret_detection_date = []
-    tmp_ret_vendor_dep = []
-    tmp_ret_vendor_product = []
-    tmp_ret_risk_adjustment = []
-    tmp_ret_false_positive = []
-    tmp_ret_operational_requirement = []
-    tmp_ret_deviation_rationale = []
-    tmp_ret_comments = []
-    tmp_ret_service_name = []
-    tmp_ret_name = []
-    tmp_ret_adjusted_risk_rating =[]
-    risks = working_df['SSP Implementation Differential?'].tolist()
-    risk_controls = working_df['Control ID'].tolist()
-    new_i_risks = []
-    #split risks, liklihoods, and impacts into lists of sentances to explode
-    for risk in risks:
-        n_risk = risk.split('\n')
-        new_i_risks.append(n_risk)
-    pl2_controls_list = []
-    pl2_findings = []
-    index = 0
-    for pl2_list in new_i_risks:
-        for pl2 in pl2_list:
-            if len(pl2)==0:
+
+    # Keep only relevant columns and drop NA rows in Differential column
+    working_df = working_df[['Assessment Procedure', 'SSP Implementation Differential?']].dropna(
+        subset=['SSP Implementation Differential?']
+    )
+
+    # Iterate through rows and split by newlines
+    for proc, diff in zip(working_df['Assessment Procedure'], working_df['SSP Implementation Differential?']):
+        for line in diff.splitlines():
+            line = line.strip()
+            if not line:
                 continue
-            else:
-                pl2_findings.append(pl2)
-                pl2_controls_list.append(risk_controls[index])
-        index+=1
-    index = 0
-    for pl2 in pl2_findings:
-        pl2_stmt = pl2
-        for prefix in finding_replacer_list:
-            pl2_stmt = pl2_stmt.replace(prefix, "")
-        tmp_ret_risks.append(pl2_stmt)
-        tmp_ret_controls.append(pl2_controls_list[index])
-        tmp_ret_name.append("pl-2")#
-        tmp_ret_detection_source.append("Assessment Test Case") #Control testing or documentation Review
-        tmp_ret_source_id.append("None")
-        tmp_ret_asset_id.append("N/A")#N/A, or leave blank?
-        tmp_ret_detection_date.append("")#SAR date
-        tmp_ret_vendor_dep.append("No")
-        tmp_ret_vendor_product.append("N/A")
-        tmp_ret_adjusted_risk_rating.append("N/A")
-        tmp_ret_false_positive.append("No")
-        tmp_ret_operational_requirement.append("No")
-        tmp_ret_deviation_rationale.append("")
-        tmp_ret_comments.append("")
-        tmp_ret_service_name.append("")
-        tmp_ret_risk_adjustment.append("No")
-        index+=1
-    for item in tmp_ret_controls:
-        ret_controls.append(item)
-    for item in tmp_ret_name:
-        ret_name.append(item)
-    for item in tmp_ret_risks:
-        ret_description.append(item)                
-    for item in tmp_ret_detection_source:
-        ret_detection_source.append(item)
-    for item in tmp_ret_source_id:
-        ret_source_id.append(item)
-    for item in tmp_ret_asset_id:
-        ret_asset_id.append(item)
-    for item in tmp_ret_detection_date:
-        ret_detection_date.append(item)
-    for item in tmp_ret_vendor_dep:
-        ret_vendor_dep.append(item)                
-    for item in tmp_ret_vendor_product:
-        ret_vendor_product.append(item)
-    for item in tmp_ret_risk_adjustment:
-        ret_risk_adjustment.append(item)
-    for item in tmp_ret_false_positive:
-        ret_false_positive.append(item)    
-    for item in tmp_ret_operational_requirement:
-        ret_operational_requirement.append(item)
-    for item in tmp_ret_deviation_rationale:
-        ret_deviation_rationale.append(item)                
-    for item in tmp_ret_comments:
-        ret_comments.append(item)
-    for item in tmp_ret_service_name:
-        ret_service_name.append(item)
-    for item in tmp_ret_risks:
-        ret_Likelihood.append('Low')                
-    for item in tmp_ret_risks:
-        ret_Impact.append('Low')
-    dateTimeObj = datetime.now()
-    timestampStr = dateTimeObj.strftime("%d-%b-%Y (%H:%M:%S.%f)")    
-    print(sheet + " PL-2's Completed: "+ timestampStr) 
+            if any(line.startswith(prefix) for prefix in drop_list):
+                continue
+            pl_2_name.append(f"{proc} SSP Deficiency")
+            pl_2_description.append(line)
    
 def calculate_risk(ret_Likelihood, ret_Impact):
     iter_index = 0
@@ -466,19 +399,32 @@ def define_risk_names_3(ret_name_tmp2):
             
 def generate_poam_ids(ret_name):
     index = 0
-    finding_count = 1
+    global finding_count
     for name in ret_name:
-        if "SSP" in name:
-            poam_ctl = "PL-2"
-        elif "pl-2" in name:
-            poam_ctl = "PL-2"
-        else:
-            poam_ctl = ret_controls[index]
+        poam_ctl = ret_controls[index]
         finding_count_string = str(finding_count)
+        print(finding_count_string)
+        print(finding_count)
         poam_string = poam_year + " - V" + finding_count_string + " - " + poam_ctl
         ret_poam_id.append(poam_string)
         index += 1
         finding_count += 1
+        
+def generate_poam_ids_pl2(ret_name):
+    """
+    Generates POA&M IDs for pl_2_name entries.
+    Always uses 'PL-2' as the control reference.
+    """
+    index = 0
+    global finding_count
+    global pl_2_poam_id
+    for name in ret_name:
+        poam_ctl = "PL-2"   # Always PL-2 for this function
+        finding_count_string = str(finding_count)
+        poam_string = poam_year + " - V" + finding_count_string + " - " + poam_ctl
+        pl_2_poam_id.append(poam_string)
+        index += 1
+        finding_count += 1        
 #%%Define function to clean data
 
 def clean_and_split_lists():
@@ -550,6 +496,7 @@ define_risk_names_2(ret_name_tmp)
 define_risk_names_3(ret_name_tmp2)
 
 #%% generate POA&M ID's
+print(ret_name)
 generate_poam_ids(ret_name)
 
 #%% Save and Export the RET
@@ -594,10 +541,12 @@ columns =
      ])
 
 #strip out "refer to" and "see" findings
-export_df = export_df[~export_df["Weakness Description"].str.startswith('Refer ', na=False)]
-export_df = export_df[~export_df["Weakness Description"].str.startswith('See ', na=False)]
+#export_df = export_df[~export_df["Weakness Description"].str.startswith('Refer ', na=False)]
+#export_df = export_df[~export_df["Weakness Description"].str.startswith('See ', na=False)]
+
 
 #%% Finalize POA&M IDs:
+finding_count = 1
 ret_name =  export_df['Weakness Name'].tolist()
 ret_controls = export_df['Controls'].tolist()
 ret_poam_id = []
@@ -623,6 +572,17 @@ export_df = export_df.loc[:,['POA&M ID',
  'Comments',
  'Service Name']]
 
+generate_poam_ids_pl2(pl_2_name)
+#%% Save and export PL-2 RET
+export_df_2 = pd.DataFrame(list(zip(
+    pl_2_poam_id,
+    pl_2_name,
+    pl_2_description)), 
+columns = 
+    ['Deficiency ID', 
+     'Deficiency Name',
+     'Deficiency Name '
+     ])
 #%%
 book = load_workbook(ret_path)
 writer = pd.ExcelWriter(ret_path, engine='openpyxl')
@@ -630,7 +590,7 @@ writer.workbook = book
 writer.worksheets = dict((ws.title, ws) for ws in book.worksheets)
 
 export_df.to_excel(writer, sheet_name='SAR Risk Exposure Table', index = False)
-
+export_df_2.to_excel(writer, sheet_name='PL-2 Table', index = False)
 
 writer.close()
 
