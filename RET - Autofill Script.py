@@ -4,8 +4,9 @@
 from datetime import datetime
 import pandas as pd
 from openpyxl import load_workbook
+from openpyxl import Workbook
 import os
-import numpy as np
+
 
 dateTimeObj = datetime.now()
 timestampStr = dateTimeObj.strftime("%d-%b-%Y (%H:%M:%S.%f)")
@@ -77,6 +78,10 @@ pl_2_description = []
 
 #global finding count variable
 finding_count = 1
+
+#Global Error counts
+global_error_count = 0
+global_error_list = ["Refer to errors below and correct them to process RET"]
 
 #Likelihood and impact are necessary to calculate original risk  - columns not imported into Final RET
 ret_Likelihood = []
@@ -157,6 +162,7 @@ finding_replacer_list = [
 #finding_counter = 1
 
 def process_findings_in_sheet(sheet):
+    global global_error_count
     working_df = pd.read_excel(srtm_path, sheet_name=sheet)
     working_df = working_df.dropna(subset=['Control ID']) #drop and FedRAMP formatting rows that muck up the process
     #global finding_counter
@@ -267,12 +273,25 @@ def process_findings_in_sheet(sheet):
     it = iter(ret_proccessing_list)
     the_len = len(next(it))
     if not all(len(l) == the_len for l in it):
-        print('Unable to process ' + sheet + "Findings. Issues found while combining split data. Ensure that columns have consistent lengths and numbers of rows.")
-        print("Control ID's': " + str(len(tmp_ret_controls)))
-        print("Asessment Procedures: " + str(len(tmp_ret_assessments)))
-        print("Risk Paragraphs: " + str(len(tmp_ret_risks)))
-        print("Likelihood Paragraphs: " + str(len(tmp_ret_likelihoods)))
-        print("Impact Paragraphs: " + str(len(tmp_ret_impacts)))
+        error_message='Unable to process ' + sheet + " Findings. Issues found while combining split data. Examine controls that have multiple findings per line and ensure that risk statements, impacts, and likelihoods all have the same number of entries."
+        error_ctl_id = "Control ID's': " + str(len(tmp_ret_controls))
+        error_assessment_proc = "Asessment Procedures: " + str(len(tmp_ret_assessments))
+        error_risks = "Risk Paragraphs: " + str(len(tmp_ret_risks))
+        error_impacts = "Impact Paragraphs: " + str(len(tmp_ret_impacts))
+        error_liklihoods = "Likelihood Paragraphs: " + str(len(tmp_ret_likelihoods))
+        print(error_message)
+        print(error_ctl_id)
+        print(error_assessment_proc)
+        print(error_risks)
+        print(error_impacts)
+        print(error_liklihoods)
+        global_error_list.append(error_message)
+        global_error_list.append(error_ctl_id)
+        global_error_list.append(error_assessment_proc)
+        global_error_list.append(error_risks)
+        global_error_list.append(error_impacts)
+        global_error_list.append(error_liklihoods)
+        global_error_count +=1
     else:
         for item in tmp_ret_controls:
             ret_controls.append(item)
@@ -403,8 +422,6 @@ def generate_poam_ids(ret_name):
     for name in ret_name:
         poam_ctl = ret_controls[index]
         finding_count_string = str(finding_count)
-        print(finding_count_string)
-        print(finding_count)
         poam_string = poam_year + " - V" + finding_count_string + " - " + poam_ctl
         ret_poam_id.append(poam_string)
         index += 1
@@ -425,6 +442,7 @@ def generate_poam_ids_pl2(ret_name):
         pl_2_poam_id.append(poam_string)
         index += 1
         finding_count += 1        
+        
 #%%Define function to clean data
 
 def clean_and_split_lists():
@@ -496,7 +514,6 @@ define_risk_names_2(ret_name_tmp)
 define_risk_names_3(ret_name_tmp2)
 
 #%% generate POA&M ID's
-print(ret_name)
 generate_poam_ids(ret_name)
 
 #%% Save and Export the RET
@@ -583,14 +600,24 @@ columns =
      'Deficiency Name',
      'Deficiency Name '
      ])
-#%%
-book = load_workbook(ret_path)
-writer = pd.ExcelWriter(ret_path, engine='openpyxl')
-writer.workbook = book
-writer.worksheets = dict((ws.title, ws) for ws in book.worksheets)
+#%% final export - fails if errors detected
+if global_error_count == 0:
+    book = load_workbook(ret_path)
+    writer = pd.ExcelWriter(ret_path, engine='openpyxl')
+    writer.workbook = book
+    writer.worksheets = dict((ws.title, ws) for ws in book.worksheets)
+    
+    export_df.to_excel(writer, sheet_name='SAR Risk Exposure Table', index = False)
+    export_df_2.to_excel(writer, sheet_name='PL-2 Table', index = False)
+    
+    writer.close()
+else:
+    wb = Workbook()
+    ws = wb.active
 
-export_df.to_excel(writer, sheet_name='SAR Risk Exposure Table', index = False)
-export_df_2.to_excel(writer, sheet_name='PL-2 Table', index = False)
+# Write the list to the first column
+    for row, value in enumerate(global_error_list, start=1):
+        ws.cell(row=row, column=1, value=value)
 
-writer.close()
-
+# Save the file
+    wb.save(ret_path)
