@@ -47,6 +47,7 @@ control_families = [
 
 
 
+
 #define RET lists to append to
 ret_poam_id = []
 ret_controls = []
@@ -558,8 +559,8 @@ columns =
      ])
 
 #strip out "refer to" and "see" findings
-#export_df = export_df[~export_df["Weakness Description"].str.startswith('Refer ', na=False)]
-#export_df = export_df[~export_df["Weakness Description"].str.startswith('See ', na=False)]
+export_df = export_df[~export_df["Weakness Description"].str.startswith('Refer ', na=False)]
+export_df = export_df[~export_df["Weakness Description"].str.startswith('See ', na=False)]
 
 
 #%% Finalize POA&M IDs:
