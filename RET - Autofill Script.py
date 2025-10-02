@@ -90,7 +90,7 @@ ret_Impact = []
 
 #The following list defines the words that will be checked for to determine if a finding is a documentation finding. 
 #All findings that have at least one of these words will be labeled as a documentation finding.
-documentation_words_to_check = ["policy", "Policy", 'Policies', "Documentation", "documentation"]
+documentation_words_to_check = ["policy", "Policy", 'Policies', 'policies', 'Procedure', 'procedure', "Documentation", "documentation"]
 
 #pulls current year to assign to POA&Ms
 poam_year = dateTimeObj.strftime("%Y")
