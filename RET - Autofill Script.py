@@ -6,7 +6,7 @@ import pandas as pd
 from openpyxl import load_workbook
 from openpyxl import Workbook
 import os
-
+import warnings
 
 dateTimeObj = datetime.now()
 timestampStr = dateTimeObj.strftime("%d-%b-%Y (%H:%M:%S.%f)")
@@ -14,6 +14,11 @@ print('Start Timestamp : ', timestampStr)
 
 pd.options.mode.chained_assignment = None  # default='warn'
 
+#suppress openpyxle warnings
+warnings.filterwarnings(
+    "ignore",
+    message="Data Validation extension is not supported"
+)
 #%% Define variables 
 
 #define local user variable
